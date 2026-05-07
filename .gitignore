@@ -3,14 +3,16 @@ __pycache__/
 *.pyc
 .venv/
 
-# Environment/secrets
+# Environment files
 .env
 
-# Database and raw company/workbook data
+# SQLite databases
 data/*.db
+
+# Excel workbooks
 data/*.xlsx
 
-# VS Code
+# VS Code settings
 .vscode/
 
 # OS files
