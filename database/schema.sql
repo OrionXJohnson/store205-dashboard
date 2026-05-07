@@ -247,6 +247,11 @@ CREATE TABLE IF NOT EXISTS ma_attach_metrics (
     office_quantity INTEGER DEFAULT 0,
     service_plan_quantity INTEGER DEFAULT 0,
 
+    eset_attach_revenue_per_pc REAL DEFAULT 0,
+    office_attach_revenue_per_pc REAL DEFAULT 0,
+    service_plan_attach_revenue_per_pc REAL DEFAULT 0,
+
+    attach_gm_percentile REAL DEFAULT 0,
     eset_percentile REAL DEFAULT 0,
     office_percentile REAL DEFAULT 0,
     service_plan_percentile REAL DEFAULT 0,
