@@ -270,3 +270,51 @@ CREATE TABLE IF NOT EXISTS ma_attach_metrics (
     FOREIGN KEY (period_id)
         REFERENCES reporting_periods(period_id)
 );
+
+
+/* =========================================================
+   INDEXES
+   ========================================================= */
+
+/*
+Indexes improve query speed for dashboard and analytics lookups.
+
+These are especially useful because most analytics queries filter by:
+- store_id
+- period_id
+- row_type
+- department_id
+- associate_id
+
+Indexes do not change the data itself. They only help SQLite find rows faster.
+*/
+
+CREATE INDEX IF NOT EXISTS idx_sales_store_period_row_type
+ON sales_metrics (store_id, period_id, row_type);
+
+CREATE INDEX IF NOT EXISTS idx_sales_period_row_type
+ON sales_metrics (period_id, row_type);
+
+CREATE INDEX IF NOT EXISTS idx_sales_department
+ON sales_metrics (department_id);
+
+CREATE INDEX IF NOT EXISTS idx_systems_store_period_row_type
+ON systems_rpu_metrics (store_id, period_id, row_type);
+
+CREATE INDEX IF NOT EXISTS idx_systems_period_row_type
+ON systems_rpu_metrics (period_id, row_type);
+
+CREATE INDEX IF NOT EXISTS idx_systems_associate
+ON systems_rpu_metrics (associate_id);
+
+CREATE INDEX IF NOT EXISTS idx_ma_store_period_row_type
+ON ma_attach_metrics (store_id, period_id, row_type);
+
+CREATE INDEX IF NOT EXISTS idx_ma_period_row_type
+ON ma_attach_metrics (period_id, row_type);
+
+CREATE INDEX IF NOT EXISTS idx_ma_associate
+ON ma_attach_metrics (associate_id);
+
+CREATE INDEX IF NOT EXISTS idx_reporting_period_type
+ON reporting_periods (period_type);
