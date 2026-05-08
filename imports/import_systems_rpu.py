@@ -19,11 +19,18 @@ Run from project root:
 
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+import sys
 
 from excel_reader import load_excel_workbook
+from import_helpers import (
+    create_import_batch,
+    get_or_create_period,
+    get_or_create_store,
+    safe_integer,
+    safe_number,
+    try_parse_store_id,
+)
 
-import sys
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATABASE_DIR = PROJECT_ROOT / "database"
@@ -42,123 +49,6 @@ MS_RPU_SHEETS = {
 }
 
 REPORT_DATE = "2026-04-30"
-
-
-def safe_number(value: Any) -> float:
-    """
-    Safely convert workbook numeric values.
-
-    Blank cells become 0.
-    """
-    if value is None:
-        return 0
-
-    return float(value)
-
-
-def safe_integer(value: Any) -> int:
-    """
-    Safely convert workbook integer values.
-
-    Blank cells become 0.
-    """
-    if value is None:
-        return 0
-
-    return int(value)
-
-
-def try_parse_store_id(value: Any) -> int | None:
-    """
-    Convert workbook store values into store IDs.
-
-    Workbook-wide rows like Goal return None.
-    """
-    if value is None:
-        return None
-
-    try:
-        return int(value)
-    except (ValueError, TypeError):
-        return None
-
-
-def get_or_create_store(store_id: int) -> None:
-    """
-    Ensure store exists before importing metrics.
-    """
-    existing_store = fetch_one(
-        """
-        SELECT store_id
-        FROM stores
-        WHERE store_id = ?;
-        """,
-        (store_id,),
-    )
-
-    if existing_store:
-        return
-
-    district_number = 3 if store_id == 205 else None
-
-    execute_query(
-        """
-        INSERT INTO stores (
-            store_id,
-            store_name,
-            district_number,
-            store_type
-        )
-        VALUES (?, ?, ?, ?);
-        """,
-        (
-            store_id,
-            f"Store {store_id}",
-            district_number,
-            "Retail",
-        ),
-    )
-
-
-def get_or_create_period(period_type: str) -> int:
-    """
-    Get or create reporting period row.
-    """
-    existing_period = fetch_one(
-        """
-        SELECT period_id
-        FROM reporting_periods
-        WHERE report_date = ?
-          AND period_type = ?;
-        """,
-        (REPORT_DATE, period_type),
-    )
-
-    if existing_period:
-        return existing_period["period_id"]
-
-    execute_query(
-        """
-        INSERT INTO reporting_periods (
-            report_date,
-            period_type
-        )
-        VALUES (?, ?);
-        """,
-        (REPORT_DATE, period_type),
-    )
-
-    new_period = fetch_one(
-        """
-        SELECT period_id
-        FROM reporting_periods
-        WHERE report_date = ?
-          AND period_type = ?;
-        """,
-        (REPORT_DATE, period_type),
-    )
-
-    return new_period["period_id"]
 
 
 def get_or_create_associate(
@@ -233,45 +123,6 @@ def get_row_type(last_name: str | None) -> str:
     return "associate"
 
 
-def create_import_batch(
-    sheet_name: str,
-    period_type: str,
-) -> int:
-    """
-    Create import batch tracking row.
-    """
-    execute_query(
-        """
-        INSERT INTO import_batches (
-            source_file_name,
-            source_sheet_name,
-            report_date,
-            period_type,
-            notes
-        )
-        VALUES (?, ?, ?, ?, ?);
-        """,
-        (
-            WORKBOOK_NAME,
-            sheet_name,
-            REPORT_DATE,
-            period_type,
-            "Imported by import_systems_rpu.py",
-        ),
-    )
-
-    batch = fetch_one(
-        """
-        SELECT import_batch_id
-        FROM import_batches
-        ORDER BY import_batch_id DESC
-        LIMIT 1;
-        """
-    )
-
-    return batch["import_batch_id"]
-
-
 def import_ms_rpu_sheet(
     sheet_name: str,
     period_type: str,
@@ -285,8 +136,9 @@ def import_ms_rpu_sheet(
     period_id = get_or_create_period(period_type)
 
     import_batch_id = create_import_batch(
-        sheet_name,
-        period_type,
+        sheet_name=sheet_name,
+        period_type=period_type,
+        importer_name="import_systems_rpu.py",
     )
 
     imported_rows = 0
