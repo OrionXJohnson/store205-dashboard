@@ -29,6 +29,7 @@ COMMANDS = [
     ["python", "database/validate_ma_attach_import.py"],
     ["python", "analytics/test_sales_analytics.py"],
     ["python", "analytics/test_systems_analytics.py"],
+    ["python", "analytics/test_ma_attach_analytics.py"],
 ]
 
 
