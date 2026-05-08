@@ -15,10 +15,19 @@ Run from the project root:
 from datetime import datetime
 from pathlib import Path
 from typing import Any
+import sys
 
 from excel_reader import load_excel_workbook
-
-import sys
+from import_helpers import (
+    REPORT_DATE,
+    WORKBOOK_NAME,
+    create_import_batch,
+    get_or_create_period,
+    get_or_create_store,
+    safe_integer,
+    safe_number,
+    try_parse_store_id,
+)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATABASE_DIR = PROJECT_ROOT / "database"
@@ -38,80 +47,6 @@ SALES_SHEETS = {
 
 # The workbook is dated 04/30/26.
 REPORT_DATE = "2026-04-30"
-
-
-def safe_number(value: Any) -> float:
-    """
-    Convert Excel numeric values safely.
-
-    Blank cells are treated as 0.
-    """
-    if value is None:
-        return 0
-
-    return float(value)
-
-
-def safe_integer(value: Any) -> int:
-    """
-    Convert Excel integer values safely.
-
-    Blank cells are treated as 0.
-    """
-    if value is None:
-        return 0
-
-    return int(value)
-
-def try_parse_store_id(value: Any) -> int | None:
-    """
-    Convert a workbook store value into a store ID.
-
-    Returns None when the row is not tied to a real store number,
-    such as workbook-wide Total rows.
-    """
-    if value is None:
-        return None
-
-    try:
-        return int(value)
-    except (ValueError, TypeError):
-        return None
-
-def get_or_create_store(store_id: int) -> None:
-    """
-    Ensure a store exists before importing metrics.
-
-    Only Store 205 has a confirmed district right now.
-    Other stores are imported with unknown district values.
-    """
-    existing_store = fetch_one(
-        "SELECT store_id FROM stores WHERE store_id = ?;",
-        (store_id,),
-    )
-
-    if existing_store:
-        return
-
-    district_number = 3 if store_id == 205 else None
-
-    execute_query(
-        """
-        INSERT INTO stores (
-            store_id,
-            store_name,
-            district_number,
-            store_type
-        )
-        VALUES (?, ?, ?, ?);
-        """,
-        (
-            store_id,
-            f"Store {store_id}",
-            district_number,
-            "Retail",
-        ),
-    )
 
 
 def get_department_id(department_code: str | None) -> int | None:
@@ -156,47 +91,6 @@ def get_department_id(department_code: str | None) -> int | None:
     )
 
     return new_department["department_id"]
-
-
-def get_or_create_period(period_type: str) -> int:
-    """
-    Return the reporting period ID for the workbook report date.
-    """
-    existing_period = fetch_one(
-        """
-        SELECT period_id
-        FROM reporting_periods
-        WHERE report_date = ?
-          AND period_type = ?;
-        """,
-        (REPORT_DATE, period_type),
-    )
-
-    if existing_period:
-        return existing_period["period_id"]
-
-    execute_query(
-        """
-        INSERT INTO reporting_periods (
-            report_date,
-            period_type
-        )
-        VALUES (?, ?);
-        """,
-        (REPORT_DATE, period_type),
-    )
-
-    new_period = fetch_one(
-        """
-        SELECT period_id
-        FROM reporting_periods
-        WHERE report_date = ?
-          AND period_type = ?;
-        """,
-        (REPORT_DATE, period_type),
-    )
-
-    return new_period["period_id"]
 
 
 def get_or_create_associate(
@@ -258,12 +152,6 @@ def get_row_type(
 ) -> str:
     """
     Classify the workbook row type for sales sheets.
-
-    Workbook row patterns:
-    - department_code = 'Total' means true store total.
-    - first_name = 'Total' with a real department means department total.
-    - last_name = 'No Sales ID' means no-sales-id row.
-    - first_name = 'Total' with no department means no-sales-id subtotal.
     """
     department_value = str(department_code).strip().lower() if department_code else ""
     first_value = str(first_name).strip().lower() if first_name else ""
@@ -284,42 +172,6 @@ def get_row_type(
     return "associate"
 
 
-def create_import_batch(sheet_name: str, period_type: str) -> int:
-    """
-    Create an import batch record for auditability.
-    """
-    execute_query(
-        """
-        INSERT INTO import_batches (
-            source_file_name,
-            source_sheet_name,
-            report_date,
-            period_type,
-            notes
-        )
-        VALUES (?, ?, ?, ?, ?);
-        """,
-        (
-            WORKBOOK_NAME,
-            sheet_name,
-            REPORT_DATE,
-            period_type,
-            "Imported by import_sales_metrics.py",
-        ),
-    )
-
-    batch = fetch_one(
-        """
-        SELECT import_batch_id
-        FROM import_batches
-        ORDER BY import_batch_id DESC
-        LIMIT 1;
-        """
-    )
-
-    return batch["import_batch_id"]
-
-
 def import_sales_sheet(sheet_name: str, period_type: str) -> int:
     """
     Import one sales sheet into sales_metrics.
@@ -331,7 +183,11 @@ def import_sales_sheet(sheet_name: str, period_type: str) -> int:
     worksheet = workbook[sheet_name]
 
     period_id = get_or_create_period(period_type)
-    import_batch_id = create_import_batch(sheet_name, period_type)
+    import_batch_id = create_import_batch(
+        sheet_name=sheet_name,
+        period_type=period_type,
+        importer_name="import_sales_metrics.py",
+    )
 
     imported_rows = 0
 
@@ -359,6 +215,13 @@ def import_sales_sheet(sheet_name: str, period_type: str) -> int:
             first_name,
             last_name,
         )
+
+        department_id = None
+
+        if row_type in {"associate", "department_total"}:
+            department_id = get_department_id(department_code)
+
+        associate_id = get_or_create_associate(first_name, last_name)
 
         execute_query(
             """
