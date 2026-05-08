@@ -206,8 +206,7 @@ def import_sales_sheet(sheet_name: str, period_type: str) -> int:
         last_name = worksheet.cell(row=row_number, column=4).value
 
         get_or_create_store(store_id)
-
-        department_id = get_department_id(department_code)
+        
         associate_id = get_or_create_associate(first_name, last_name)
 
         row_type = get_row_type(
