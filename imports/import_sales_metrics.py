@@ -257,28 +257,29 @@ def get_row_type(
     last_name: str | None,
 ) -> str:
     """
-    Classify the workbook row type.
+    Classify the workbook row type for sales sheets.
+
+    Workbook row patterns:
+    - department_code = 'Total' means true store total.
+    - first_name = 'Total' with a real department means department total.
+    - last_name = 'No Sales ID' means no-sales-id row.
+    - first_name = 'Total' with no department means no-sales-id subtotal.
     """
-    values = {
-        str(value).strip().lower()
-        for value in [department_code, first_name, last_name]
-        if value is not None
-    }
+    department_value = str(department_code).strip().lower() if department_code else ""
+    first_value = str(first_name).strip().lower() if first_name else ""
+    last_value = str(last_name).strip().lower() if last_name else ""
 
-    if "total" in values:
-        if department_code:
-            return "department_total"
-
+    if department_value == "total":
         return "store_total"
 
-    if "no sales id" in values:
+    if last_value == "no sales id":
         return "no_sales_id"
 
-    if "goal" in values:
-        return "goal"
+    if first_value == "total" and not department_value:
+        return "no_sales_total"
 
-    if "minimum" in values:
-        return "minimum"
+    if first_value == "total" and department_value:
+        return "department_total"
 
     return "associate"
 
