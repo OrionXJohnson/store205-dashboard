@@ -177,7 +177,7 @@ def import_ms_rpu_sheet(
                 primary_units,
                 asp,
                 rpu,
-                total_attach_units,
+                attach_units_per_primary,
                 total_attach_rpu,
                 service_plans_attach_percent,
                 eset_attach_percent,
@@ -207,7 +207,7 @@ def import_ms_rpu_sheet(
                 safe_number(
                     worksheet.cell(row=row_number, column=17).value
                 ),
-                safe_integer(
+                safe_number(
                     worksheet.cell(row=row_number, column=19).value
                 ),
                 safe_number(

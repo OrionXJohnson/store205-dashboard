@@ -196,7 +196,16 @@ CREATE TABLE IF NOT EXISTS systems_rpu_metrics (
     asp REAL DEFAULT 0,
     rpu REAL DEFAULT 0,
 
-    total_attach_units INTEGER DEFAULT 0,
+        /*
+    Average attached items per primary item sold.
+
+    Workbook section:
+    Total Attach -> Units
+
+    This is not a raw total count of attached items.
+    */
+    attach_units_per_primary REAL DEFAULT 0,
+
     total_attach_rpu REAL DEFAULT 0,
 
     service_plans_attach_percent REAL DEFAULT 0,

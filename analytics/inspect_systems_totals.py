@@ -30,7 +30,7 @@ def main() -> None:
             systems_rpu_metrics.primary_units,
             systems_rpu_metrics.asp,
             systems_rpu_metrics.rpu,
-            systems_rpu_metrics.total_attach_units,
+            systems_rpu_metrics.attach_units_per_primary,
             systems_rpu_metrics.total_attach_rpu,
             systems_rpu_metrics.service_plans_attach_percent,
             systems_rpu_metrics.eset_attach_percent,
@@ -59,7 +59,7 @@ def main() -> None:
         print(f"Primary units: {row['primary_units']}")
         print(f"ASP: ${row['asp']:,.2f}")
         print(f"RPU: ${row['rpu']:,.2f}")
-        print(f"Total attach units: {row['total_attach_units']}")
+        print(f"Attach units per primary: {row['attach_units_per_primary']:,.2f}")
         print(f"Total attach RPU: ${row['total_attach_rpu']:,.2f}")
         print(f"Service plans attach: {row['service_plans_attach_percent']:.2%}")
         print(f"ESET attach: {row['eset_attach_percent']:.2%}")
