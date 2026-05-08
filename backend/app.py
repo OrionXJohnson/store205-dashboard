@@ -11,6 +11,7 @@ from fastapi import FastAPI
 
 from backend.routes.sales_routes import router as sales_router
 from backend.routes.health_routes import router as health_router
+from backend.routes.systems_routes import router as systems_router
 
 
 app = FastAPI(
@@ -22,6 +23,7 @@ app = FastAPI(
 app.include_router(health_router)
 app.include_router(health_router)
 app.include_router(sales_router)
+app.include_router(systems_router)
 
 
 @app.get("/")
