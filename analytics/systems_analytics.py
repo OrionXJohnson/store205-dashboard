@@ -325,3 +325,115 @@ def get_store_systems_rank(
         "metric_value": 0,
         "found": False,
     }
+
+def get_store_sales_rank(
+    store_id: int,
+    period_type: str,
+    metric: str = "sales_amount",
+) -> dict:
+    """
+    Return a store's rank for a sales metric.
+
+    Supported metrics:
+    - sales_amount
+    - transaction_count
+    - average_transaction
+    - no_sales_share
+
+    Notes:
+    - Higher sales, transactions, and average transaction rank higher.
+    - Higher no_sales_share also ranks higher, but this should be interpreted
+      as operational exposure, not necessarily positive performance.
+    """
+    allowed_metrics = {
+        "sales_amount",
+        "transaction_count",
+        "average_transaction",
+        "no_sales_share",
+    }
+
+    if metric not in allowed_metrics:
+        raise ValueError(
+            f"Unsupported metric: {metric}. "
+            f"Allowed metrics: {sorted(allowed_metrics)}"
+        )
+
+    rows = fetch_all(
+        """
+        SELECT
+            store_total.store_id,
+            store_total.sales_amount,
+            store_total.transaction_count,
+            no_sales.sales_amount AS no_sales_amount
+        FROM sales_metrics AS store_total
+        JOIN reporting_periods
+            ON store_total.period_id = reporting_periods.period_id
+        LEFT JOIN sales_metrics AS no_sales
+            ON store_total.store_id = no_sales.store_id
+           AND store_total.period_id = no_sales.period_id
+           AND no_sales.row_type = 'no_sales_id'
+        WHERE reporting_periods.period_type = ?
+          AND store_total.row_type = 'store_total'
+          AND store_total.sales_amount > 0;
+        """,
+        (period_type,),
+    )
+
+    ranked_stores = []
+
+    for row in rows:
+        sales_amount = row["sales_amount"] or 0
+        transaction_count = row["transaction_count"] or 0
+        no_sales_amount = row["no_sales_amount"] or 0
+
+        average_transaction = 0
+        no_sales_share = 0
+
+        if transaction_count > 0:
+            average_transaction = sales_amount / transaction_count
+
+        if sales_amount > 0:
+            no_sales_share = no_sales_amount / sales_amount
+
+        metric_values = {
+            "sales_amount": sales_amount,
+            "transaction_count": transaction_count,
+            "average_transaction": average_transaction,
+            "no_sales_share": no_sales_share,
+        }
+
+        ranked_stores.append(
+            {
+                "store_id": row["store_id"],
+                "metric_value": metric_values[metric],
+            }
+        )
+
+    ranked_stores.sort(
+        key=lambda store: store["metric_value"],
+        reverse=True,
+    )
+
+    total_stores = len(ranked_stores)
+
+    for index, store in enumerate(ranked_stores, start=1):
+        if store["store_id"] == store_id:
+            return {
+                "store_id": store_id,
+                "period_type": period_type,
+                "metric": metric,
+                "rank": index,
+                "total_stores": total_stores,
+                "metric_value": store["metric_value"],
+                "found": True,
+            }
+
+    return {
+        "store_id": store_id,
+        "period_type": period_type,
+        "metric": metric,
+        "rank": None,
+        "total_stores": total_stores,
+        "metric_value": 0,
+        "found": False,
+    }
