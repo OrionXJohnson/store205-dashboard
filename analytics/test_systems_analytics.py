@@ -11,6 +11,8 @@ from systems_analytics import (
     get_store_systems_summary,
     get_top_rpu_associates,
     get_top_attach_rpu_associates,
+    get_store_rpu_comparison,
+    get_store_systems_rank,
 )
 
 
@@ -87,6 +89,60 @@ def print_top_attach_rpu_associates(period_type: str) -> None:
             f"ESET: {associate['eset_attach_percent']:.2%}"
         )
 
+def print_store_rpu_comparison(period_type: str) -> None:
+    """Print store-level Systems RPU comparison."""
+    stores = get_store_rpu_comparison(
+        period_type=period_type,
+        limit=10,
+    )
+
+    print(f"\nTop Stores by Systems RPU - {period_type}")
+    print("----------------------------------------")
+
+    if not stores:
+        print("No store total rows found.")
+        return
+
+    for index, store in enumerate(stores, start=1):
+        marker = " <= Store 205" if store["store_id"] == 205 else ""
+
+        print(
+            f"{index}. Store {store['store_id']} | "
+            f"Units: {store['primary_units']} | "
+            f"RPU: ${store['rpu']:,.2f} | "
+            f"Attach RPU: ${store['total_attach_rpu']:,.2f}"
+            f"{marker}"
+        )
+
+def print_store_rank(period_type: str) -> None:
+    """Print Store 205 Systems ranks for key metrics."""
+    metrics = [
+        "rpu",
+        "total_attach_rpu",
+        "asp",
+        "primary_units",
+    ]
+
+    print(f"\nStore 205 Systems Ranks - {period_type}")
+    print("----------------------------------------")
+
+    for metric in metrics:
+        rank_info = get_store_systems_rank(
+            store_id=205,
+            period_type=period_type,
+            metric=metric,
+        )
+
+        if not rank_info["found"]:
+            print(f"{metric}: Store 205 not found")
+            continue
+
+        print(
+            f"{metric}: "
+            f"#{rank_info['rank']} of {rank_info['total_stores']} | "
+            f"Value: {rank_info['metric_value']:,.2f}"
+        )
+
 def main() -> None:
     """Run test summaries."""
     for period_type in [
@@ -97,6 +153,8 @@ def main() -> None:
         print_summary(period_type)
         print_top_rpu_associates(period_type)
         print_top_attach_rpu_associates(period_type)
+        print_store_rpu_comparison(period_type)
+        print_store_rank(period_type)
 
 
 if __name__ == "__main__":
