@@ -3,6 +3,7 @@ import type { PeriodType } from "../../types/common";
 interface PeriodSelectorProps {
   selectedPeriod: PeriodType;
   onChange: (period: PeriodType) => void;
+  allowedPeriods?: PeriodType[];
 }
 
 const PERIOD_OPTIONS: {
@@ -30,12 +31,18 @@ const PERIOD_OPTIONS: {
 export default function PeriodSelector({
   selectedPeriod,
   onChange,
+  allowedPeriods,
 }: PeriodSelectorProps) {
+  const visibleOptions = allowedPeriods
+    ? PERIOD_OPTIONS.filter((option) =>
+        allowedPeriods.includes(option.value)
+      )
+    : PERIOD_OPTIONS;
+
   return (
     <div className="flex flex-wrap gap-3">
-      {PERIOD_OPTIONS.map((option) => {
-        const isSelected =
-          option.value === selectedPeriod;
+      {visibleOptions.map((option) => {
+        const isSelected = option.value === selectedPeriod;
 
         return (
           <button
