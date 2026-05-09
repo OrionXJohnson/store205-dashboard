@@ -1,627 +1,457 @@
 # Store 205 Dashboard
 
-A backend analytics and dashboard project for transforming the Store Daily Sales workbook into a structured, queryable, and dashboard-ready reporting system.
+A full-stack analytics dashboard for Store 205 sales, Systems RPU performance, and attach metrics.
 
-The project is designed around real Store 205 workbook data and focuses on accuracy, maintainability, and future dashboard deployment.
+This project was designed as a maintainable business intelligence platform focused on:
+- Local store analytics first
+- Associate-level operational insight
+- Department-level performance tracking
+- Chain-wide comparison second
+- Long-term scalability and maintainability
 
 ---
 
-## Project Purpose
+# Project Goals
 
-The Store 205 Dashboard is being built to make existing store reporting easier to analyze, validate, and eventually visualize through a more sophisticated user interface.
-
-The goal is not to create fake demo data or fictional business categories. The goal is to preserve the workbook’s real operational structure while improving:
-
-- Data organization
-- Reporting accuracy
-- Store-level visibility
-- Department-level visibility
-- Systems performance analysis
-- Apple attach analysis
+The primary purpose of this dashboard is to provide:
+- Store 205 operational visibility
 - Associate performance analysis
-- Cross-store comparisons
-- Future dashboard usability
+- Department performance analysis
+- Systems RPU analytics
+- MA Attach analytics
+- Chain-wide benchmarking
+- Executive-style dashboard reporting
+
+The architecture prioritizes:
+1. Local Store 205 data
+2. Internal Store 205 comparisons
+3. Chain-wide data
+4. Chain-wide comparisons
 
 ---
 
-## Current Project Status
+# Current Features
 
-The project currently includes a working backend data platform foundation.
+## Sales Analytics
+- Store sales summaries
+- Department breakdowns
+- No Sales ID tracking
+- Store rankings
+- Top store comparisons
+- Daily / PPTD / MTD / QTD support
 
-Completed so far:
+## Systems Analytics
+- Systems summary metrics
+- RPU analytics
+- Attach RPU analytics
+- Associate leaderboards
+- Systems rankings
+- Daily / PPTD / MTD support
 
-- SQLite database schema
-- Seeded store and department lookup data
-- Sales workbook importer
-- Systems RPU importer
-- MA Attach importer
-- Shared importer helper functions
-- Import batch tracking
-- Sales analytics layer
-- Systems analytics layer
-- Validation scripts
-- Full rebuild and validation pipeline
-- Git/GitHub workflow
-- Documentation structure
+## MA Attach Analytics
+- MA attach summaries
+- Associate attach performance
+- Attach GM analysis
+- Percentile tracking
+- Daily / PPTD / MTD support
 
-The next planned major phase is the API layer.
-
----
-
-## Tech Stack
-
-| Technology | Purpose |
-|---|---|
-| Python | Backend scripts, importers, analytics logic |
-| SQLite | Local analytics database |
-| openpyxl | Excel workbook parsing |
-| Git | Version control |
-| GitHub | Repository hosting |
-| Visual Studio Code | Development environment |
-
-Planned:
-
-| Technology | Purpose |
-|---|---|
-| Flask or FastAPI | Backend API layer |
-| React | Frontend dashboard |
-| Charting library | Dashboard visualizations |
+## Frontend Dashboard
+- Multi-page dashboard architecture
+- Responsive layouts
+- Period switching
+- Recharts visualizations
+- Reusable dashboard components
+- Type-safe API integration
 
 ---
 
-## Project Architecture
+# Tech Stack
 
-Current backend flow:
+## Backend
+- Python
+- FastAPI
+- SQLite
+- Pydantic
+- Uvicorn
 
-```text
-Excel Workbook
-    ↓
-Import Scripts
-    ↓
-SQLite Database
-    ↓
-Analytics Layer
-    ↓
-Validation/Test Scripts
-```
-
-Planned full application flow:
-
-```text
-Excel Workbook
-    ↓
-Import Scripts
-    ↓
-SQLite Database
-    ↓
-Analytics Layer
-    ↓
-API Layer
-    ↓
-Frontend Dashboard
-```
+## Frontend
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- Recharts
+- Axios
+- React Router DOM
 
 ---
 
-## Project Structure
+# Project Structure
 
 ```text
 store205-dashboard/
-├── analytics/
-│   ├── inspect_sales_totals.py
-│   ├── inspect_systems_totals.py
-│   ├── sales_analytics.py
-│   ├── systems_analytics.py
-│   ├── test_sales_analytics.py
-│   └── test_systems_analytics.py
+│
+├── backend/
+│   ├── analytics/
+│   ├── api/
+│   ├── database/
+│   ├── imports/
+│   ├── models/
+│   ├── routes/
+│   ├── scripts/
+│   └── services/
 │
 ├── data/
-│   ├── Store-Daily-Sales.xlsx
 │   └── store205.db
 │
-├── database/
-│   ├── create_database.py
-│   ├── db_helper.py
-│   ├── schema.sql
-│   ├── seed_database.py
-│   ├── validate_ma_attach_import.py
-│   ├── validate_sales_import.py
-│   ├── validate_systems_rpu_import.py
-│   └── verify_database.py
+├── frontend/
+│   ├── public/
+│   ├── src/
+│   │   ├── api/
+│   │   ├── components/
+│   │   │   ├── charts/
+│   │   │   ├── common/
+│   │   │   ├── layout/
+│   │   │   └── tables/
+│   │   ├── features/
+│   │   │   ├── maAttach/
+│   │   │   ├── sales/
+│   │   │   └── systems/
+│   │   ├── hooks/
+│   │   ├── pages/
+│   │   ├── types/
+│   │   └── utils/
+│   │
+│   ├── package.json
+│   └── vite.config.ts
 │
-├── imports/
-│   ├── excel_reader.py
-│   ├── import_helpers.py
-│   ├── import_ma_attach.py
-│   ├── import_sales_metrics.py
-│   ├── import_systems_rpu.py
-│   ├── inspect_ma_attach.py
-│   ├── inspect_ms_rpu.py
-│   ├── inspect_sales_row_types.py
-│   └── inspect_workbook.py
-│
-├── scripts/
-│   └── rebuild_and_validate.py
-│
-├── .gitignore
 └── README.md
 ```
 
 ---
 
-## Data Source
+# Backend Architecture
 
-The primary source of truth is the Store Daily Sales workbook.
-
-Expected local workbook location:
+The backend follows a layered architecture:
 
 ```text
-data/Store-Daily-Sales.xlsx
+Routes
+→ Analytics Services
+→ Database Queries
+→ SQLite Database
 ```
 
-The workbook is not committed to GitHub because it may contain sensitive operational or employee-related data.
+The API layer is intentionally separated from analytics logic to improve:
+- Maintainability
+- Testability
+- Scalability
+- Future database migration support
 
 ---
 
-## Important Business Rules
+# Frontend Architecture
 
-This project follows the actual workbook structure.
-
-Current confirmed rules:
-
-- Store 205 belongs to District 3.
-- Stores are grouped by district, not region.
-- Store and department structures should come from the workbook.
-- Fake stores, fake departments, fake regions, or fictional categories should not be added.
-- Department codes should only be interpreted when confirmed.
-- Unknown department names should remain unconfirmed until verified.
-- Store totals, department totals, associate rows, and No Sales ID rows must be handled separately.
-
-Confirmed department display names:
-
-| Code | Display Name |
-|---|---|
-| BY | Build Your Own |
-| MS | Systems |
-| MA | Apple |
-| GS | General Sales |
-| CE | Consumer Electronics |
-| SE | Service |
-| OP | Operations |
-
-Other department codes are currently preserved as unconfirmed until verified.
-
----
-
-## Database Design
-
-The SQLite database currently stores:
-
-- Stores
-- Departments
-- Associates
-- Reporting periods
-- Import batches
-- Sales metrics
-- Systems RPU metrics
-- MA Attach metrics
-
-The database also includes indexes to improve analytics query speed.
-
-Common indexed fields include:
-
-- `store_id`
-- `period_id`
-- `row_type`
-- `department_id`
-- `associate_id`
-
----
-
-## Import Pipeline
-
-The project currently imports three major workbook sections.
-
-### Sales Metrics Import
-
-Script:
-
-```powershell
-python imports/import_sales_metrics.py
-```
-
-Imports:
-
-- Daily
-- PPTD
-- MTD
-- QTD
-
-Preserves row types:
-
-- `associate`
-- `department_total`
-- `no_sales_id`
-- `no_sales_total`
-- `store_total`
-
-Important distinction:
-
-`No Sales ID` is treated as an operational/unattributed sales category. It may represent web pickup, unattributed transactions, register-only activity, or transactions not tied to an associate label.
-
-### Systems RPU Import
-
-Script:
-
-```powershell
-python imports/import_systems_rpu.py
-```
-
-Imports:
-
-- MS RPU Yesterday
-- MS RPU MTD
-- MS RPU PPTD
-
-Tracks:
-
-- Primary units
-- ASP
-- RPU
-- Attach units per primary
-- Total Attach RPU
-- Service plan attach percentage
-- ESET attach percentage
-- Office attach percentage
-- Monitor attach percentage
-- Mice/keyboard attach percentage
-- All other attach percentage
-
-Important naming note:
-
-The workbook’s Total Attach → Units column is stored as:
+The frontend follows a modular feature-based architecture.
 
 ```text
-attach_units_per_primary
+Pages
+→ Feature Sections
+→ Reusable Components
+→ API Layer
+→ Backend API
 ```
 
-This represents average attached items per primary item sold, not a raw total attach count.
+The frontend intentionally separates:
+- Data fetching
+- Presentation logic
+- Reusable UI
+- Formatting utilities
+- Page orchestration
 
-### MA Attach Import
-
-Script:
-
-```powershell
-python imports/import_ma_attach.py
-```
-
-Imports:
-
-- MA Attach Yesterday
-- MA Attach PPTD
-- MA Attach MTD
-
-Tracks:
-
-- Computers
-- UPT
-- Attach revenue
-- Attach GM$
-- ESET quantity
-- Office quantity
-- Service plan quantity
-- Attach revenue per PC metrics
-- Percentile metrics
+This minimizes coupling between the frontend and backend.
 
 ---
 
-## Analytics Layer
+# API Overview
 
-Analytics modules are designed to keep business logic separate from raw database queries.
+## Health
 
-### Sales Analytics
-
-File:
-
-```text
-analytics/sales_analytics.py
-```
-
-Current capabilities:
-
-- Store sales summary
-- Department sales breakdown
-- No Sales ID summary
-- Store sales rankings
-- Store sales comparisons
-
-Example business questions supported:
-
-- How much did Store 205 sell today, MTD, PPTD, or QTD?
-- Which departments are driving sales?
-- How much sales volume is unattributed through No Sales ID?
-- How does Store 205 rank against other stores?
-- Is Store 205 high volume, high average transaction, or both?
-
-### Systems Analytics
-
-File:
-
-```text
-analytics/systems_analytics.py
-```
-
-Current capabilities:
-
-- Store Systems KPI summary
-- Top RPU associates
-- Top Attach RPU associates
-- Store Systems RPU comparison
-- Store Systems ranking by selected metrics
-
-Example business questions supported:
-
-- How strong is Store 205 in Systems RPU?
-- Which associates lead in RPU?
-- Which associates lead in Attach RPU?
-- How does Store 205 compare against other stores?
-- Is Store 205 high volume, high quality, or both?
-
----
-
-## Validation Workflow
-
-Validation scripts are included to verify imports and catch regressions.
-
-Run individual validations:
-
-```powershell
-python database/verify_database.py
-python database/validate_sales_import.py
-python database/validate_systems_rpu_import.py
-python database/validate_ma_attach_import.py
-```
-
-Run analytics tests:
-
-```powershell
-python analytics/test_sales_analytics.py
-python analytics/test_systems_analytics.py
+```http
+GET /api/health
 ```
 
 ---
 
-## Full Rebuild and Validation
+# Sales Endpoints
 
-The main backend health-check command is:
+## Store Sales Summary
+
+```http
+GET /api/sales/store/{store_id}/{period_type}
+```
+
+## Department Breakdown
+
+```http
+GET /api/sales/store/{store_id}/{period_type}/departments
+```
+
+## No Sales Summary
+
+```http
+GET /api/sales/store/{store_id}/{period_type}/no-sales
+```
+
+## Store Sales Rankings
+
+```http
+GET /api/sales/store/{store_id}/{period_type}/rankings
+```
+
+## Top Stores by Sales
+
+```http
+GET /api/sales/top-stores/{period_type}
+```
+
+---
+
+# Systems Endpoints
+
+## Systems Summary
+
+```http
+GET /api/systems/store/{store_id}/{period_type}/summary
+```
+
+## Top RPU Associates
+
+```http
+GET /api/systems/store/{store_id}/{period_type}/top-rpu-associates
+```
+
+## Top Attach Associates
+
+```http
+GET /api/systems/store/{store_id}/{period_type}/top-attach-associates
+```
+
+## Top Systems Stores
+
+```http
+GET /api/systems/top-stores/{period_type}
+```
+
+## Systems Rankings
+
+```http
+GET /api/systems/store/{store_id}/{period_type}/rankings
+```
+
+---
+
+# MA Attach Endpoints
+
+## MA Attach Summary
+
+```http
+GET /api/ma-attach/store/{store_id}/{period_type}/summary
+```
+
+## Top MA Attach Associates
+
+```http
+GET /api/ma-attach/store/{store_id}/{period_type}/top-associates
+```
+
+---
+
+# Supported Period Types
+
+## Sales
+- daily
+- pay_period_to_date
+- month_to_date
+- quarter_to_date
+
+## Systems
+- daily
+- pay_period_to_date
+- month_to_date
+
+## MA Attach
+- daily
+- pay_period_to_date
+- month_to_date
+
+---
+
+# Validation
+
+The backend includes:
+- Input validation
+- Period validation
+- Limit validation
+- Import validation
+- Analytics validation
+- API smoke testing
+
+---
+
+# Rebuild Pipeline
+
+The project includes a complete rebuild pipeline:
 
 ```powershell
 python scripts/rebuild_and_validate.py
 ```
 
 This script:
-
-- Deletes the existing local SQLite database
-- Recreates the database schema
-- Seeds lookup data
-- Imports Sales metrics
-- Imports Systems RPU metrics
-- Imports MA Attach metrics
-- Runs database verification
-- Runs import validation scripts
-- Runs analytics test scripts
-- Stops immediately if a command fails
-
-This is the recommended command before committing major backend changes.
+1. Deletes the existing database
+2. Recreates schema
+3. Seeds base tables
+4. Reimports all datasets
+5. Runs validation scripts
+6. Runs analytics tests
 
 ---
 
-## Setup Instructions
-
-### 1. Clone the Repository
+# API Smoke Testing
 
 ```powershell
-git clone https://github.com/OrionXJohnson/store205-dashboard.git
-cd store205-dashboard
+python scripts/api_smoke_test.py
 ```
 
-### 2. Install Python Dependencies
+This validates:
+- Endpoint availability
+- Invalid route handling
+- Status codes
+- Backend integration
+
+---
+
+# Running the Backend
+
+## Start FastAPI Server
 
 ```powershell
-pip install openpyxl
+python -m uvicorn backend.app:app --reload
 ```
 
-### 3. Add the Workbook Locally
-
-Place the workbook here:
+Backend runs at:
 
 ```text
-data/Store-Daily-Sales.xlsx
+http://127.0.0.1:8000
 ```
 
-The workbook is intentionally ignored by Git.
+API Docs:
 
-### 4. Rebuild and Validate the Backend
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+# Running the Frontend
+
+## Install Dependencies
 
 ```powershell
-python scripts/rebuild_and_validate.py
+npm install
 ```
 
-If the script finishes successfully, the local backend database and analytics layer are functioning.
-
----
-
-## Git Workflow
-
-Recommended workflow after each stable milestone:
+## Start Development Server
 
 ```powershell
-git add .
-git commit -m "Describe the completed change"
-git push
+npm run dev
 ```
 
-Good commit message examples:
+Frontend runs at:
 
 ```text
-Fix sales row type classification
-Add Systems analytics leaderboards
-Refactor MA Attach importer shared helpers
-Add rebuild and validation pipeline
-```
-
-Avoid vague commit messages such as:
-
-```text
-update
-changes
-stuff
+http://localhost:5173
 ```
 
 ---
 
-## Security Notes
+# Frontend Design Philosophy
 
-This repository should not include:
+The frontend intentionally avoids:
+- Giant cluttered dashboard pages
+- Overloaded visualizations
+- Excessive nested filtering
+- Dense enterprise-style layouts
 
-- Real Excel workbook files
-- SQLite database files
-- Employee-sensitive data
-- Store operational exports
-- API keys
-- Passwords
-- Credentials
-
-The following are intentionally ignored by Git:
-
-```text
-data/*.xlsx
-data/*.db
-.env
-.venv/
-__pycache__/
-```
+Instead, it uses:
+- Overview-first design
+- Focused analytics pages
+- Clear information hierarchy
+- Progressive detail expansion
 
 ---
 
-## Maintainability Standards
+# Current Frontend Pages
 
-This project prioritizes maintainability over quick shortcuts.
+## Overview
+High-level KPIs and rankings.
 
-Standards:
+## Sales
+Department breakdowns and store comparisons.
 
-- Use clear file responsibilities.
-- Keep import logic separate from analytics logic.
-- Keep analytics logic separate from future API/frontend code.
-- Avoid hardcoding business assumptions unless verified.
-- Preserve workbook structure accurately.
-- Use shared helper functions where appropriate.
-- Add comments when logic may not be obvious later.
-- Prefer readable code over overly clever code.
-- Validate data after refactors.
-- Commit stable checkpoints frequently.
+## Systems
+RPU, attach performance, and associate analytics.
 
-If a shortcut is ever used, it should be documented along with how to improve it later.
+## MA Attach
+MA attach analytics and associate performance.
 
 ---
 
-## Current Known Notes
+# Maintainability Standards
 
-- PPTD and MTD currently match in the workbook data used during development.
-- Some department codes remain unconfirmed.
-- `No Sales ID` is a valid operational category and should not be treated as junk data.
-- `attach_units_per_primary` is not a raw count; it is an average-style attach metric from the workbook.
-- Some inspection scripts are retained intentionally because the workbook structure is still being studied.
-
----
-
-## Roadmap
-
-### Completed
-
-- Database schema
-- Seed data
-- Sales import pipeline
-- Systems RPU import pipeline
-- MA Attach import pipeline
-- Shared import helpers
-- Sales analytics
-- Systems analytics
-- Database indexes
-- Validation scripts
-- Rebuild and validation pipeline
-- GitHub workflow
-
-### Next
-
-- API layer
-- API route organization
-- JSON response contracts
-- Sales dashboard endpoints
-- Systems dashboard endpoints
-
-### Future
-
-- Frontend dashboard
-- Store executive overview page
-- Department drill-down pages
-- Systems drill-down page
-- MA Attach drill-down page
-- Cross-store comparison views
-- Associate performance views
-- Role-based dashboard views
-- Deployment planning
+This project prioritizes:
+- Strong TypeScript typing
+- Reusable UI components
+- Feature-based organization
+- Clear naming conventions
+- Separation of concerns
+- Backend/frontend decoupling
+- Minimal duplicated logic
 
 ---
 
-## Planned API Direction
+# Future Planned Features
 
-The next phase will expose analytics through backend endpoints.
+## Planned Charts
+- Systems attach charts
+- Department trend charts
+- Store comparison charts
+- Associate performance charts
 
-Planned flow:
+## Planned Analytics
+- Historical trending
+- Associate drilldown pages
+- Store comparison dashboards
+- Advanced percentile analysis
 
-```text
-Frontend
-    ↓
-API routes
-    ↓
-Analytics functions
-    ↓
-SQLite database
-```
-
-Example future endpoints:
-
-```text
-GET /api/sales/store/205/daily
-GET /api/sales/store/205/month_to_date
-GET /api/systems/store/205/daily
-GET /api/systems/store/205/month_to_date
-```
-
-The frontend should not query SQLite directly.
+## Planned Infrastructure
+- Authentication
+- Role-based dashboards
+- API caching
+- Production deployment
+- PostgreSQL migration support
 
 ---
 
-## Project Philosophy
+# Development Notes
 
-This project is being built as a real analytics system, not a mock dashboard.
-
-The guiding principles are:
-
-- Accuracy first
-- Workbook alignment
-- Maintainable code
-- Honest business interpretation
-- Clear separation of concerns
-- Repeatable validation
-- No fictional data structures
-- Dashboard-ready backend design
-
-The final dashboard should help managers understand store performance more clearly while still respecting how the workbook actually reports the business.
+The project intentionally emphasizes:
+- Correctness over speed
+- Maintainability over shortcuts
+- Scalable architecture
+- Modular frontend growth
+- Validation-first backend development
 
 ---
 
 # License
 
-This project is currently intended for educational, internship, and portfolio purposes.
+This project is currently private and intended for portfolio, analytics, and internal dashboard development purposes.
