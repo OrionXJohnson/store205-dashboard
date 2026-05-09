@@ -1,16 +1,22 @@
 import DashboardCard from "../../components/common/DashboardCard";
 import type { DepartmentSalesBreakdown } from "../../types/sales";
 import { formatCurrency, formatNumber } from "../../utils/formatters";
+import type { PeriodType } from "../../types/common";
+
+import { getPeriodLabel } from "../../utils/periods";
 
 interface DepartmentBreakdownSectionProps {
   departments: DepartmentSalesBreakdown[];
+  period: PeriodType;
 }
 
 export default function DepartmentBreakdownSection({
   departments,
+  period,
 }: DepartmentBreakdownSectionProps) {
   return (
-    <DashboardCard title="Daily Department Breakdown">
+    <DashboardCard title={`${getPeriodLabel(period)} Department Breakdown`}
+>
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-left">
           <thead>

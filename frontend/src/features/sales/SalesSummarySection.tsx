@@ -2,6 +2,9 @@ import DashboardCard from "../../components/common/DashboardCard";
 import MetricCard from "../../components/common/MetricCard";
 
 import type { SalesSummary } from "../../types/sales";
+import type { PeriodType } from "../../types/common";
+
+import { getPeriodLabel } from "../../utils/periods";
 
 import {
   formatCurrency,
@@ -10,13 +13,15 @@ import {
 
 interface SalesSummarySectionProps {
   salesData: SalesSummary;
+  period: PeriodType;
 }
 
 export default function SalesSummarySection({
   salesData,
+  period,
 }: SalesSummarySectionProps) {
   return (
-    <DashboardCard title="Daily Sales Summary">
+    <DashboardCard title={`${getPeriodLabel(period)} Sales Summary`}>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <MetricCard
           label="Sales Amount"

@@ -1,17 +1,29 @@
 import { useEffect, useState } from "react";
 
+import {
+  fetchDepartmentSalesBreakdown,
+  fetchStoreSalesRankings,
+  fetchStoreSalesSummary,
+  fetchTopSalesStores,
+} from "../api/salesApi";
+
 import ErrorState from "../components/common/ErrorState";
 import LoadingState from "../components/common/LoadingState";
-import SalesSummarySection from "../features/sales/SalesSummarySection";
-import { fetchDepartmentSalesBreakdown, fetchStoreSalesSummary } from "../api/salesApi";
-import DepartmentBreakdownSection from "../features/sales/DepartmentBreakdownSection";
-import type {
-  DepartmentSalesBreakdown,
-  SalesSummary,
-} from "../types/sales";
 import PeriodSelector from "../components/common/PeriodSelector";
 
+import DepartmentBreakdownSection from "../features/sales/DepartmentBreakdownSection";
+import SalesRankingsSection from "../features/sales/SalesRankingsSection";
+import SalesSummarySection from "../features/sales/SalesSummarySection";
+import TopSalesStoresSection from "../features/sales/TopSalesStoresSection";
+
 import type { PeriodType } from "../types/common";
+
+import type {
+  DepartmentSalesBreakdown,
+  SalesRankings,
+  SalesSummary,
+  TopSalesStore,
+} from "../types/sales";
 
 
 export default function DashboardPage() {
@@ -20,19 +32,30 @@ export default function DashboardPage() {
   const [error, setError] = useState<string | null>(null);
   const [departments, setDepartments] = useState<DepartmentSalesBreakdown[]>([]);
   const [selectedPeriod, setSelectedPeriod] = useState<PeriodType>("daily");
+  const [rankings, setRankings] = useState<SalesRankings | null>(null);
+  const [topSalesStores, setTopSalesStores] = useState<TopSalesStore[]>([]);
 
   useEffect(() => {
     async function loadSalesData() {
       try {
         setLoading(true);
 
-        const [salesResponse, departmentsResponse] = await Promise.all([
+        const [
+            salesResponse,
+            departmentsResponse,
+            rankingsResponse,
+            topSalesStoresResponse,
+        ] = await Promise.all([
             fetchStoreSalesSummary(205, selectedPeriod),
             fetchDepartmentSalesBreakdown(205, selectedPeriod),
+            fetchStoreSalesRankings(205, selectedPeriod),
+            fetchTopSalesStores(selectedPeriod, 10),
         ]);
 
         setSalesData(salesResponse.data);
         setDepartments(departmentsResponse.data);
+        setRankings(rankingsResponse.data.rankings);
+        setTopSalesStores(topSalesStoresResponse.data.stores);
       } catch (err) {
         console.error(err);
 
@@ -53,7 +76,7 @@ export default function DashboardPage() {
     return <ErrorState message={error} />;
   }
 
-  if (!salesData) {
+  if (!salesData || !rankings) {
     return <ErrorState message="No data available." />;
   }
 
@@ -69,9 +92,27 @@ export default function DashboardPage() {
                 onChange={setSelectedPeriod}
             />
         </div>
-        <SalesSummarySection salesData={salesData} />
+            <SalesSummarySection
+                salesData={salesData}
+                period={selectedPeriod}
+            />
         <div className="mt-8">
-            <DepartmentBreakdownSection departments={departments} />
+            <SalesRankingsSection
+                rankings={rankings}
+                period={selectedPeriod}
+            />
+        </div>
+        <div className="mt-8">
+            <TopSalesStoresSection
+                stores={topSalesStores}
+                period={selectedPeriod}
+            />
+        </div>
+        <div className="mt-8">
+            <DepartmentBreakdownSection
+                departments={departments}
+                period={selectedPeriod}
+            />
         </div>
       </div>
     </main>
